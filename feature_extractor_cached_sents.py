@@ -152,6 +152,9 @@ def find_paths(mrs, ep_1, ep_2, e1_tag, e2_tag, cur_path, count=0):
 def run_ace(sentence):
     ace_bin = "/home/wlane/Applications/ace-0.9.23/ace"
     erg_file = "/home/wlane/Applications/ace-0.9.23/erg-1214-x86-64-0.9.23.dat"
+#    ace_bin = "/home2/wlane/mrs-575/ace/ace"
+#    erg_file = "/home2/wlane/mrs-575/ace/erg-1214-x86-64-0.9.22.dat"
+
     # ace_bin = "/Applications/ace/ace-0.9.22/ace"
     # erg_file = "/Applications/ace/ace-0.9.22/erg-1214-osx-0.9.22.dat"
     results = ace.parse(erg_file, sentence, cmdargs=['-n', '1'], executable=ace_bin)['RESULTS']
@@ -205,6 +208,8 @@ if __name__ == "__main__":
 
 
     cached_file_path = "/home/wlane/Documents/Computational Linguistics/575-mrs/Data/cachedSentences.out"
+    # cached_file_path = "/home2/wlane/mrs-575/TE13-CachedFeatExtractor/Data/cachedSentences.out"
+
     with open(cached_file_path) as file:
         sentences = file.readlines()
 
