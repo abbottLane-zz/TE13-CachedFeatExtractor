@@ -156,7 +156,7 @@ def run_ace(sentence):
     # erg_file = "/Applications/ace/ace-0.9.22/erg-1214-osx-0.9.22.dat"
     results = ace.parse(erg_file, sentence, cmdargs=['-n', '1'], executable=ace_bin)['RESULTS']
     if results:
-        res1 = ace.parse(erg_file, sentence, cmdargs=['-n', '1'], executable=ace_bin)['RESULTS'][0]['MRS']
+        res1 = results[0]['MRS']
     else:
         res1 = None
 
