@@ -230,9 +230,14 @@ if __name__ == "__main__":
         res = run_ace(sent)
         if res:
             feats = extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, res,reversed)
-            list_of_output_lines.append(format_features(feats, key))
+            formatted_feat = format_features(feats, key)
+            list_of_output_lines.append(formatted_feat)
+            #debug
+            print(formatted_feat)
         else:
             list_of_output_lines.append("NO_PARSE")
+            #debug
+            print("NO_PARSE")
 
 
     # Write features to output file
