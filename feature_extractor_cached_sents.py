@@ -9,12 +9,15 @@ from delphin.mrs import simplemrs
 __author__ = 'Martin J. Horn'
 
 
-def output_features(features):
-    str = ""
+def format_features(features,key):
+    str = key+"=+="
     for feat in features:
-        str += feat + " "
-    print(str)
-    sys.stdout.flush()
+        str += feat + "#-#"
+    str = str[:-3]
+
+    return str
+
+
 
 
 def extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, ace_result, reversed):
@@ -147,8 +150,8 @@ def find_paths(mrs, ep_1, ep_2, e1_tag, e2_tag, cur_path, count=0):
 
 
 def run_ace(sentence):
-    ace_bin = "/home/wlane/Applications/ace-0.9.22/ace"
-    erg_file = "/home/wlane/Applications/ace-0.9.22/erg-1214-x86-64-0.9.22.dat"
+    ace_bin = "/home/wlane/Applications/ace-0.9.23/ace"
+    erg_file = "/home/wlane/Applications/ace-0.9.23/erg-1214-x86-64-0.9.23.dat"
     # ace_bin = "/Applications/ace/ace-0.9.22/ace"
     # erg_file = "/Applications/ace/ace-0.9.22/erg-1214-osx-0.9.22.dat"
     results = ace.parse(erg_file, sentence, cmdargs=['-n', '1'], executable=ace_bin)['RESULTS']
@@ -205,6 +208,10 @@ if __name__ == "__main__":
     with open(cached_file_path) as file:
         sentences = file.readlines()
 
+    # To collect the lines of final output
+    list_of_output_lines = list()
+
+    # per line, send each sentence to the erg
     for sentence in sentences:
         tokens = sentence.split("#-#")
         e1 = tokens[0]
@@ -213,14 +220,24 @@ if __name__ == "__main__":
         e2 = tokens[3]
         e2_b = tokens[4]
         e2_e = tokens[5]
-        sent = tokens[6]
+        sent = tokens[6].rstrip("\n")
+
+        # In the output file of this program, feature sets will be structured as: key=+=feat1#-#feat2#-#feat3#-#etc...
+        key = e1+e1_b+e1_e+e2+e2_b+e2_e+sent
+
+        e1, e1_b, e1_e, e2, e2_b, e2_e, sent, reversed = read_doc(e1, e1_b, e1_e, e2, e2_b, e2_e, sent)
 
         res = run_ace(sent)
         if res:
-            feats = extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, res, reversed)
-            output_features(feats)
+            feats = extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, res,reversed)
+            list_of_output_lines.append(format_features(feats, key))
         else:
-            print("NO_PARSE")
-    else:
-        sys.stderr.write("Must specify 6/7 arguments: <e1> <e1_begin> <e1_end> "
-                         "<e2> <e2_begin> <e2_end> [<\"sentence\">]\n")
+            list_of_output_lines.append("NO_PARSE")
+
+
+    # Write features to output file
+    f=  open("Data/cachedFeats.out")
+    for line in list_of_output_lines:
+        f.write(line)
+    f.close()
+
