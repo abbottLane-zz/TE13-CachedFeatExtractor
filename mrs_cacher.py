@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
 
 
-    cached_file_path = "Data/cachedSentences.out"
+    cached_file_path = "Data/cachedSentences.FULL.out"
     # cached_file_path = "/home2/wlane/mrs-575/TE13-CachedFeatExtractor/Data/cachedSentences.out"
 
     with open(cached_file_path) as file:

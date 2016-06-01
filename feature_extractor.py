@@ -220,11 +220,15 @@ if __name__ == "__main__":
             e1, e1_b, e1_e, e2, e2_b, e2_e, sent, reversed = read_doc(e1, e1_b, e1_e, e2, e2_b, e2_e, sent)
             feats = extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, mrs, reversed)
             str = key+"=:="
-            for feat in feats:
-                str += feat + " "
-            print(str)
+            if len(feats) >0:
+                for feat in feats:
+                    str += feat + " "
+                print(str)
+                output_lines.append(str)
+            else:
+                print(key+"=:=NO_FEATS")
+                output_lines.append(key+"=:=NO_FEATS")
             sys.stdout.flush()
-            output_lines.append(str)
         else:
             print(key+"=:=NO_PARSE")
             output_lines.append(key+"=:=NO_PARSE")
