@@ -7,13 +7,6 @@ from delphin.interfaces import ace
 from delphin.mrs import simplemrs
 
 
-def output_features(features, key):
-    str = key+"=:="
-    for feat in features:
-        str += feat + " "
-    print(str)
-    sys.stdout.flush()
-
 
 def extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, ace_result, reversed):
     # print("a1"+ace_result)
@@ -191,10 +184,18 @@ def read_doc(e1, e1_begin, e1_end, e2, e2_begin, e2_end, file_name=None):
     return e1_string, e1_begin_sent, e1_end_sent, e2_string, e2_begin_sent, e2_end_sent, sent, reversed
 
 
+def write_features_to_file(output_lines):
+    f=open("Data/cachedFeatureDictionary.base.out", "w")
+    for line in output_lines:
+        f.write(line+ "\n")
+    pass
+
+
 if __name__ == "__main__":
 
-    cached_sentences_dir = "Data/cachedSentencesDEMO.out"
-    cached_MRSs_dir = "Data/cachedMRSsDEMO.out"
+    cached_sentences_dir = "Data/cachedSentences.out"
+    cached_MRSs_dir = "Data/cachedMRSs.out"
+    output_lines = list()
 
     with open(cached_sentences_dir) as f:
         cached_sentences = f.readlines()
@@ -203,21 +204,29 @@ if __name__ == "__main__":
         cached_MRSs = f.readlines()
 
     for idx, mrs in enumerate(cached_MRSs):
+        tokens = cached_sentences[idx].split("#-#")
+        e1 = tokens[0]
+        e1_b = tokens[1]
+        e1_e = tokens[2]
+        e2 = tokens[3]
+        e2_b = tokens[4]
+        e2_e = tokens[5]
+        sent = tokens[6].rstrip("\n")
+
+        # In the output file of this program, feature sets will be structured as: key=+=feat1#-#feat2#-#feat3#-#etc...
+        key = e1+e1_b+e1_e+e2+e2_b+e2_e
+
         if mrs.rstrip()!="None":
-            tokens = cached_sentences[idx].split("#-#")
-            e1 = tokens[0]
-            e1_b = tokens[1]
-            e1_e = tokens[2]
-            e2 = tokens[3]
-            e2_b = tokens[4]
-            e2_e = tokens[5]
-            sent = tokens[6].rstrip("\n")
-
-             # In the output file of this program, feature sets will be structured as: key=+=feat1#-#feat2#-#feat3#-#etc...
-            key = e1+e1_b+e1_e+e2+e2_b+e2_e
-
             e1, e1_b, e1_e, e2, e2_b, e2_e, sent, reversed = read_doc(e1, e1_b, e1_e, e2, e2_b, e2_e, sent)
             feats = extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, mrs, reversed)
-            output_features(feats, key)
+            str = key+"=:="
+            for feat in feats:
+                str += feat + " "
+            print(str)
+            sys.stdout.flush()
+            output_lines.append(str)
         else:
-            print("NO_PARSE")
+            print(key+"=:=NO_PARSE")
+            output_lines.append(key+"=:=NO_PARSE")
+
+    write_features_to_file(output_lines)
