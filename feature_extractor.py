@@ -6,8 +6,6 @@ import sys
 from delphin.interfaces import ace
 from delphin.mrs import simplemrs
 
-__author__ = 'Martin J. Horn'
-
 
 def output_features(features, key):
     str = key+"=:="
