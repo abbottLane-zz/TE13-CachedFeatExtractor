@@ -9,15 +9,12 @@ from delphin.mrs import simplemrs
 __author__ = 'Martin J. Horn'
 
 
-def format_features(features,key):
-    str = key+"=+="
+def output_features(features, key):
+    str = key+"=:="
     for feat in features:
-        str += feat + "#-#"
-    str = str[:-3]
-
-    return str
-
-
+        str += feat + " "
+    print(str)
+    sys.stdout.flush()
 
 
 def extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, ace_result, reversed):
@@ -152,14 +149,11 @@ def find_paths(mrs, ep_1, ep_2, e1_tag, e2_tag, cur_path, count=0):
 def run_ace(sentence):
     ace_bin = "/home/wlane/Programs/ace-0.9.22/ace"
     erg_file = "/home/wlane/Programs/ace-0.9.22/erg-1214-x86-64-0.9.22.dat"
-#    ace_bin = "/home2/wlane/mrs-575/ace/ace"
-#    erg_file = "/home2/wlane/mrs-575/ace/erg-1214-x86-64-0.9.22.dat"
-
     # ace_bin = "/Applications/ace/ace-0.9.22/ace"
     # erg_file = "/Applications/ace/ace-0.9.22/erg-1214-osx-0.9.22.dat"
     results = ace.parse(erg_file, sentence, cmdargs=['-n', '1'], executable=ace_bin)['RESULTS']
     if results:
-        res1 = results[0]['MRS']
+        res1 = ace.parse(erg_file, sentence, cmdargs=['-n', '1'], executable=ace_bin)['RESULTS'][0]['MRS']
     else:
         res1 = None
 
@@ -200,56 +194,32 @@ def read_doc(e1, e1_begin, e1_end, e2, e2_begin, e2_end, file_name=None):
 
 
 if __name__ == "__main__":
-    from optparse import OptionParser
 
-    parser = OptionParser(__doc__)
-    options, args = parser.parse_args()
+    cached_sentences_dir = "Data/cachedSentencesDEMO.out"
+    cached_MRSs_dir = "Data/cachedMRSsDEMO.out"
 
+    with open(cached_sentences_dir) as f:
+        cached_sentences = f.readlines()
 
+    with open(cached_MRSs_dir) as f:
+        cached_MRSs = f.readlines()
 
-    cached_file_path = "Data/cachedSentencesDEMO.out"
-    # cached_file_path = "/home2/wlane/mrs-575/TE13-CachedFeatExtractor/Data/cachedSentences.out"
+    for idx, mrs in enumerate(cached_MRSs):
+        if mrs.rstrip()!="None":
+            tokens = cached_sentences[idx].split("#-#")
+            e1 = tokens[0]
+            e1_b = tokens[1]
+            e1_e = tokens[2]
+            e2 = tokens[3]
+            e2_b = tokens[4]
+            e2_e = tokens[5]
+            sent = tokens[6].rstrip("\n")
 
-    with open(cached_file_path) as file:
-        sentences = file.readlines()
+             # In the output file of this program, feature sets will be structured as: key=+=feat1#-#feat2#-#feat3#-#etc...
+            key = e1+e1_b+e1_e+e2+e2_b+e2_e
 
-    # To collect the lines of final output
-    list_of_output_lines = list()
-
-    # per line, send each sentence to the erg
-    for sentence in sentences:
-        tokens = sentence.split("#-#")
-        e1 = tokens[0]
-        e1_b = tokens[1]
-        e1_e = tokens[2]
-        e2 = tokens[3]
-        e2_b = tokens[4]
-        e2_e = tokens[5]
-        sent = tokens[6].rstrip("\n")
-
-        # In the output file of this program, feature sets will be structured as: key=+=feat1#-#feat2#-#feat3#-#etc...
-        key = e1+e1_b+e1_e+e2+e2_b+e2_e+sent
-
-        e1, e1_b, e1_e, e2, e2_b, e2_e, sent, reversed = read_doc(e1, e1_b, e1_e, e2, e2_b, e2_e, sent)
-
-        res = run_ace(sent)
-        list_of_output_lines.append(res)
-        print(res)
-        # if res:
-        #     feats = extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, res,reversed)
-        #     formatted_feat = format_features(feats, key)
-        #     list_of_output_lines.append(formatted_feat)
-        #     #debug
-        #     print(formatted_feat)
-        # else:
-        #     list_of_output_lines.append("NO_PARSE")
-        #     #debug
-        #     print("NO_PARSE")
-
-
-    # Write features to output file
-    f=  open("Data/cachedMRSsDEMO.out", "w")
-    for line in list_of_output_lines:
-        f.write(str(line)+"\n")
-    f.close()
-
+            e1, e1_b, e1_e, e2, e2_b, e2_e, sent, reversed = read_doc(e1, e1_b, e1_e, e2, e2_b, e2_e, sent)
+            feats = extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, mrs, reversed)
+            output_features(feats, key)
+        else:
+            print("NO_PARSE")
