@@ -150,8 +150,8 @@ def find_paths(mrs, ep_1, ep_2, e1_tag, e2_tag, cur_path, count=0):
 
 
 def run_ace(sentence):
-    ace_bin = "/home/wlane/Applications/ace-0.9.23/ace"
-    erg_file = "/home/wlane/Applications/ace-0.9.23/erg-1214-x86-64-0.9.23.dat"
+    ace_bin = "/home/wlane/Programs/ace-0.9.22/ace"
+    erg_file = "/home/wlane/Programs/ace-0.9.22/erg-1214-x86-64-0.9.22.dat"
 #    ace_bin = "/home2/wlane/mrs-575/ace/ace"
 #    erg_file = "/home2/wlane/mrs-575/ace/erg-1214-x86-64-0.9.22.dat"
 
@@ -207,7 +207,7 @@ if __name__ == "__main__":
 
 
 
-    cached_file_path = "/home/wlane/Documents/Computational Linguistics/575-mrs/Data/cachedSentences.out"
+    cached_file_path = "Data/cachedSentences.out"
     # cached_file_path = "/home2/wlane/mrs-575/TE13-CachedFeatExtractor/Data/cachedSentences.out"
 
     with open(cached_file_path) as file:
@@ -233,20 +233,22 @@ if __name__ == "__main__":
         e1, e1_b, e1_e, e2, e2_b, e2_e, sent, reversed = read_doc(e1, e1_b, e1_e, e2, e2_b, e2_e, sent)
 
         res = run_ace(sent)
-        if res:
-            feats = extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, res,reversed)
-            formatted_feat = format_features(feats, key)
-            list_of_output_lines.append(formatted_feat)
-            #debug
-            print(formatted_feat)
-        else:
-            list_of_output_lines.append("NO_PARSE")
-            #debug
-            print("NO_PARSE")
+        list_of_output_lines.append(res)
+        print(res)
+        # if res:
+        #     feats = extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, res,reversed)
+        #     formatted_feat = format_features(feats, key)
+        #     list_of_output_lines.append(formatted_feat)
+        #     #debug
+        #     print(formatted_feat)
+        # else:
+        #     list_of_output_lines.append("NO_PARSE")
+        #     #debug
+        #     print("NO_PARSE")
 
 
     # Write features to output file
-    f=  open("Data/cachedFeats-base.out", "w")
+    f=  open("Data/cachedMRSs.out", "w")
     for line in list_of_output_lines:
         f.write(line)
     f.close()
