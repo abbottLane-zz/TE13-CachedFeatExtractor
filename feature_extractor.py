@@ -194,7 +194,7 @@ def write_features_to_file(output_lines):
 if __name__ == "__main__":
 
     cached_sentences_dir = "Data/cachedSentences.out"
-    cached_MRSs_dir = "Data/cachedMRSs.out"
+    cached_MRSs_dir = "Data/cachedMRSs.eval.out"
     output_lines = list()
 
     with open(cached_sentences_dir) as f:

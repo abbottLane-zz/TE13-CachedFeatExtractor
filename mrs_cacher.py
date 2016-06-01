@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
 
 
-    cached_file_path = "Data/cachedSentences.FULL.out"
+    cached_file_path = "Data/cachedSentences.dev.FULL.out"
     # cached_file_path = "/home2/wlane/mrs-575/TE13-CachedFeatExtractor/Data/cachedSentences.out"
 
     with open(cached_file_path) as file:
@@ -245,7 +245,7 @@ if __name__ == "__main__":
 
 
     # Write features to output file
-    f=  open("Data/cachedMRSs.out", "w")
+    f=  open("Data/cachedMRSs.dev.out", "w")
     for line in list_of_output_lines:
         f.write(str(line)+"\n")
     f.close()
