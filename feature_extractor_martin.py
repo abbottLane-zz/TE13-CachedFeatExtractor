@@ -9,9 +9,6 @@ from delphin.mrs import simplemrs
 __author__ = 'Martin J. Horn'
 
 
-#announced716closed5258=:=feats delminited by spaces
-#NO_FEATS
-
 def output_features(features):
     str = ""
     for feat in features:
@@ -89,14 +86,15 @@ def find_temp_preds(mrs, ep_1, ep_2, e1_tag, e2_tag):
             if pred in ep.pred.string or modal in ep.pred.string:
                 pred_args = mrs.outgoing_args(ep.nodeid)
                 for arg in pred_args:
-                    labels = mrs.labelset(pred_args[arg])
-                    if pred_args[arg] == ep_1.label or ep_1.label in mrs.labelset(pred_args[arg]):
+                    cur_label = pred_args[arg]
+                    qeq_label = mrs._hcons[cur_label][2]
+                    if cur_label == ep_1.label or ep_1.label == qeq_label:
                         e1_found = True
-                    elif pred_args[arg] == ep_2.label:
+                    elif cur_label == ep_2.label or ep_2.label == qeq_label:
                         e2_found = True
 
                 if e1_found and e2_found:
-                    feat = e1_tag + "#" + ep.pred + "#" + e2_tag
+                    feat = e1_tag + "#" + ep.pred.string + "#" + e2_tag
                     features.append(feat)
 
     return features
