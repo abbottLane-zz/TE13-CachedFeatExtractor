@@ -187,7 +187,7 @@ def run_ace(sentence):
 
 def find_sentence(e1, e1_begin, e1_end, e2, e2_begin, e2_end, sent, cached_sent_file):
     index = None
-    search_key = "#-#".join((e1, str(e1_begin), str(e1_end), e2, str(e2_begin), str(e2_end), sent))
+    search_key = "#-#".join((e1, string(e1_begin), string(e1_end), e2, string(e2_begin), string(e2_end), sent))
     with open(cached_sent_file, 'r') as cached_sents:
         for i, line in enumerate(cached_sents.readlines()):
             if line.strip() == search_key:
@@ -241,41 +241,98 @@ def read_doc(e1, e1_begin, e1_end, e2, e2_begin, e2_end, file_name=None):
     return e1_string, e1_begin_sent, e1_end_sent, e2_string, e2_begin_sent, e2_end_sent, sent, reversed
 
 
+def write_features_to_file(output_lines):
+    f = open("Data/cachedFeatureDictionary.base.out", "w")
+    for line in output_lines:
+        f.write(line + "\n")
+
+
 if __name__ == "__main__":
     from optparse import OptionParser
 
     parser = OptionParser(__doc__)
     options, args = parser.parse_args()
-    if len(args) == 6:
-        e1, e1_b, e1_e, e2, e2_b, e2_e, sent, reversed = read_doc(args[0], args[1],
-                                                        args[2], args[3],
-                                                        args[4], args[5])
-        res = run_ace(sent)
-        # cache_file = "Data/cachedSentences.out"
-        # cache_file = "Data/demo_sent.txt"
-        # sent_index = find_sentence(e1, e1_b, e1_e, e2, e2_b, e2_e, sent, cache_file)
-        # res = read_mrs(sent_index, "Data/demo_mrs.txt")
-        if res:
-            feats = extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, res, reversed)
-            output_features(feats)
-        else:
-            print("NO_PARSE")
+    if len(args) == 0:
+        cached_sentences_dir = "Data/cachedSentences.dev.FULL.out"
+        cached_MRSs_dir = "Data/cachedMRSs.eval.out"
+        output_lines = list()
 
-    if len(args) == 7:
-        e1, e1_b, e1_e, e2, e2_b, e2_e, sent, reversed = read_doc(args[0], args[1],
-                                                        args[2], args[3],
-                                                        args[4], args[5],
-                                                        file_name=args[6])
-        res = run_ace(sent)
-        # cache_file = "Data/cachedSentences.out"
-        # cache_file = "Data/demo_sent.txt"
-        # sent_index = find_sentence(e1, e1_b, e1_e, e2, e2_b, e2_e, sent, cache_file)
-        # res = read_mrs(sent_index, "Data/demo_mrs.txt")
-        if res:
-            feats = extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, res, reversed)
-            output_features(feats)
-        else:
-            print("NO_PARSE")
-    else:
-        sys.stderr.write("Must specify 6/7 arguments: <e1> <e1_begin> <e1_end> "
-                         "<e2> <e2_begin> <e2_end> [<\"sentence\">]\n")
+        with open(cached_sentences_dir) as f:
+            cached_sentences = f.readlines()
+
+        with open(cached_MRSs_dir) as f:
+            cached_MRSs = f.readlines()
+
+        for idx, mrs in enumerate(cached_MRSs):
+            tokens = cached_sentences[idx].split("#-#")
+            e1 = tokens[0]
+            e1_b = tokens[1]
+            e1_e = tokens[2]
+            e2 = tokens[3]
+            e2_b = tokens[4]
+            e2_e = tokens[5]
+            sent = tokens[6].rstrip("\n")
+
+            # In the output file of this program, feature sets will be structured as: key=+=feat1#-#feat2#-#feat3#-#etc...
+            key = e1 + e1_b + e1_e + e2 + e2_b + e2_e
+
+            if mrs.rstrip() != "None":
+                e1, e1_b, e1_e, e2, e2_b, e2_e, sent, reversed = read_doc(e1, e1_b, e1_e, e2, e2_b, e2_e, sent)
+                feats = extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, mrs, reversed)
+                string = key + "=:="
+                if len(feats) > 0:
+                    for feat in feats:
+                        string += feat + " "
+                    print(string)
+                    output_lines.append(string)
+                else:
+                    print(key + "=:=NO_FEATS")
+                    output_lines.append(key + "=:=NO_FEATS")
+                sys.stdout.flush()
+            else:
+                print(key + "=:=NO_PARSE")
+                output_lines.append(key + "=:=NO_PARSE")
+
+        write_features_to_file(output_lines)
+
+
+# Old system for incorporation into Java
+#
+# if __name__ == "__main__":
+#     from optparse import OptionParser
+#
+#     parser = OptionParser(__doc__)
+#     options, args = parser.parse_args()
+#     if len(args) == 6:
+#         e1, e1_b, e1_e, e2, e2_b, e2_e, sent, reversed = read_doc(args[0], args[1],
+#                                                         args[2], args[3],
+#                                                         args[4], args[5])
+#         res = run_ace(sent)
+#         # cache_file = "Data/cachedSentences.out"
+#         # cache_file = "Data/demo_sent.txt"
+#         # sent_index = find_sentence(e1, e1_b, e1_e, e2, e2_b, e2_e, sent, cache_file)
+#         # res = read_mrs(sent_index, "Data/demo_mrs.txt")
+#         if res:
+#             feats = extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, res, reversed)
+#             output_features(feats)
+#         else:
+#             print("NO_PARSE")
+#
+#     if len(args) == 7:
+#         e1, e1_b, e1_e, e2, e2_b, e2_e, sent, reversed = read_doc(args[0], args[1],
+#                                                         args[2], args[3],
+#                                                         args[4], args[5],
+#                                                         file_name=args[6])
+#         res = run_ace(sent)
+#         # cache_file = "Data/cachedSentences.out"
+#         # cache_file = "Data/demo_sent.txt"
+#         # sent_index = find_sentence(e1, e1_b, e1_e, e2, e2_b, e2_e, sent, cache_file)
+#         # res = read_mrs(sent_index, "Data/demo_mrs.txt")
+#         if res:
+#             feats = extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, res, reversed)
+#             output_features(feats)
+#         else:
+#             print("NO_PARSE")
+#     else:
+#         sys.stderr.write("Must specify 6/7 arguments: <e1> <e1_begin> <e1_end> "
+#                          "<e2> <e2_begin> <e2_end> [<\"sentence\">]\n")
