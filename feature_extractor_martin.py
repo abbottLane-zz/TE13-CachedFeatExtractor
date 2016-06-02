@@ -81,16 +81,42 @@ def find_direct_paths(mrs, ep_1, ep_2, e1_tag, e2_tag):
     feat = None
 
     for arg in args_1:
+        cur_label = args_1[arg]
+        if cur_label[0] == 'h':
+            if cur_label in mrs._hcons:
+                qeq_label = mrs._hcons[cur_label][2]
+            else:
+                qeq_label = None
+        else:
+            qeq_label = None
         if ep_2.label == args_1[arg] or args_2['ARG0'] == args_1[arg]:
             feat = "DIRECT=" + e1_tag + "#" + ep_1.pred.pos + "[" + arg + "#" + e2_tag + "#" + ep_2.pred.pos + "]"
             # print(feat)
             features.append(feat)
+        elif qeq_label:
+            if ep_2.label == qeq_label:
+                feat = "DIRECT=" + e1_tag + "#" + ep_1.pred.pos + "[" + arg + "#" + e2_tag + "#" + ep_2.pred.pos + "]"
+                # print(feat)
+                features.append(feat)
     if not feat:
         for arg in args_2:
+            cur_label = args_2[arg]
+            if cur_label[0] == 'h':
+                if cur_label in mrs._hcons:
+                    qeq_label = mrs._hcons[cur_label][2]
+                else:
+                    qeq_label = None
+            else:
+                qeq_label = None
             if ep_1.label == args_2[arg] or args_1['ARG0'] == args_2[arg]:
                 feat = "DIRECT=" + e2_tag + "#" + ep_2.pred.pos + "[#" + arg + "#" + e1_tag + "#" + ep_1.pred.pos + "]"
                 # print(feat)
                 features.append(feat)
+            elif qeq_label:
+                if ep_2.label == qeq_label:
+                    feat = "DIRECT=" + e1_tag + "#" + ep_1.pred.pos + "[" + arg + "#" + e2_tag + "#" + ep_2.pred.pos + "]"
+                    # print(feat)
+                    features.append(feat)
 
     return features
 
@@ -278,7 +304,7 @@ def read_doc(e1, e1_begin, e1_end, e2, e2_begin, e2_end, file_name=None):
 
 
 def write_features_to_file(output_lines):
-    f = open("Data/cachedFeatureDictionary.pred-fixeddirect.out", "w")
+    f = open("Data/cachedFeatureDictionary.direct-qeq.out", "w")
     for line in output_lines:
         f.write(line + "\n")
 
