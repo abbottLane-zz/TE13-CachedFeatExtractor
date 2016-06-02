@@ -1,0 +1,29 @@
+In Washington today, the Federal Aviation Administration released air traffic control tapes from the night the TWA Flight eight hundred went down.
+The U.S. Immigration and Naturalization Service said earlier this week that once Gonzalez arrives in the United States it will begin the process.
+
+pondered 3 10 crash 16 20 "He pondered the crash."
+
+left 4 7 crash 19 23 "She left after the crash."
+
+said 3 6 sue 34 36 "He said the Miami relatives might sue."
+
+told 30 34 delayed 66 73 "Subcontractors said they were told that equipment orders would be delayed."
+
+worried 53 60 fear 82 86 "The ethnic Albanians here in Kosovo are considerably worried about the future and fear they are witnessing the beginnings of a much wider conflict."
+
+said 68 72 adding 74 80 " We can not permit a further slowing in our volume trend, Anheuser said, adding it will take appropriate competitive pricing actions to support our long-term market share growth strategy for the premium brands."
+
+permits 39 46 acquire 85 92 "The approval, which had been expected, permits West Germany's second-largest bank to acquire shares of the French investment bank."
+
+told 57 61 bought 97 103 "Earlier yesterday, the Societe de Bourses Francaises was told that a unit of Framatome S.A. also bought Navigation Mixte shares, this purchase covering more than 160,000 shares."
+
+CAN'T JUST DO REGEX:
+continue#-#4#-#12#-#pray#-#16#-#20#-# We continue to pray and pray hard to God so that there will be no confrontation whereby you will receive thousands of Americans wrapped in sad coffins after you had pushed them into a dark tunnel, Saddam said.
+
+
+closed#-#20#-#26#-#resignation#-#115#-#126#-#London share prices closed sharply lower Friday in active trading after Chancellor of the Exchequer Nigel Lawson's resignation slapped the market and Wall Street's rapid initial sell-off knocked it down.
+closed#-#20#-#26#-#slapped#-#127#-#134#-#London share prices closed sharply lower Friday in active trading after Chancellor of the Exchequer Nigel Lawson's resignation slapped the market and Wall Street's rapid initial sell-off knocked it down.
+
+announced#-#7#-#16#-#closed#-#52#-#58#-#Nashua announced the Reiss request after the market closed.
+announced 7 16 closed 52 58 Nashua announced the Reiss request after the market closed.
+
