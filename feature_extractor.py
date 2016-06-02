@@ -185,7 +185,7 @@ def read_doc(e1, e1_begin, e1_end, e2, e2_begin, e2_end, file_name=None):
 
 
 def write_features_to_file(output_lines):
-    f=open("Data/cachedFeatureDictionary.base.out", "w")
+    f=open("Data/cachedFeatureDictionary.dev.base.out", "w")
     for line in output_lines:
         f.write(line+ "\n")
     pass
@@ -193,8 +193,8 @@ def write_features_to_file(output_lines):
 
 if __name__ == "__main__":
 
-    cached_sentences_dir = "Data/cachedSentences.out"
-    cached_MRSs_dir = "Data/cachedMRSs.eval.out"
+    cached_sentences_dir = "Data/cachedSentences.dev.FULL.out"
+    cached_MRSs_dir = "Data/cachedMRSs.dev.out"
     output_lines = list()
 
     with open(cached_sentences_dir) as f:
