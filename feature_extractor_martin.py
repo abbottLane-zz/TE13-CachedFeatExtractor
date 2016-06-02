@@ -74,16 +74,16 @@ def extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, ace_result, reversed):
                     #print(feat)
                     features.append(feat)
 
-        # paths = find_paths(mrs, ep_1, ep_2, e1_tag, e2_tag, "")
-        #
-        # if paths:
-        #     shortest_path = paths[0]
-        #     for path in paths:
-        #         if len(path.split(",")) < len(shortest_path.split(",")):
-        #             shortest_path = path
-        # else:
-        #     shortest_path = "NO_PATH"
-        # features.append("PATH=" + shortest_path)
+        paths = find_paths(mrs, ep_1, ep_2, e1_tag, e2_tag, "")
+
+        if paths:
+            shortest_path = paths[0]
+            for path in paths:
+                if len(path.split(",")) < len(shortest_path.split(",")):
+                    shortest_path = path
+        else:
+            shortest_path = "NO_PATH"
+        features.append("PATH=" + shortest_path)
 
     # print("a6")
     return features
@@ -195,8 +195,8 @@ def find_paths(mrs, ep_1, ep_2, e1_tag, e2_tag, cur_path, count=0):
                 # Debug line: pred name
                 # cur_path = mrs.ep(node_id).pred.string.strip("\"") + "," + prefix + cur_path
                 paths.append(cur_path)
-        # else:
-        #     paths.clear()
+        else:
+            paths.clear()
 
     return paths
 
@@ -272,7 +272,7 @@ def read_doc(e1, e1_begin, e1_end, e2, e2_begin, e2_end, file_name=None):
 
 
 def write_features_to_file(output_lines):
-    f = open("Data/cachedFeatureDictionary.test.out", "w")
+    f = open("Data/cachedFeatureDictionary.path-pred-direct.out", "w")
     for line in output_lines:
         f.write(line + "\n")
 
@@ -316,8 +316,10 @@ if __name__ == "__main__":
                     print(string)
                     output_lines.append(string)
                 else:
-                    print(key + "=:=NO_FEATS")
-                    output_lines.append(key + "=:=NO_FEATS")
+                    print(key + "=:=NO_PARSE")
+                    output_lines.append(key + "=:=NO_PARSE")
+                    # print(key + "=:=NO_FEATS")
+                    # output_lines.append(key + "=:=NO_FEATS")
                 sys.stdout.flush()
             else:
                 print(key + "=:=NO_PARSE")
