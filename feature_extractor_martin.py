@@ -87,14 +87,27 @@ def find_temp_preds(mrs, ep_1, ep_2, e1_tag, e2_tag):
                 pred_args = mrs.outgoing_args(ep.nodeid)
                 for arg in pred_args:
                     cur_label = pred_args[arg]
-                    qeq_label = mrs._hcons[cur_label][2]
-                    if cur_label == ep_1.label or ep_1.label == qeq_label:
-                        e1_found = True
-                    elif cur_label == ep_2.label or ep_2.label == qeq_label:
-                        e2_found = True
+                    if cur_label[0] == 'h':
+                        qeq_label = mrs._hcons[cur_label][2]
+                    else:
+                        qeq_label = None
+                    if qeq_label:
+                        if cur_label == ep_1.label or ep_1.label == qeq_label:
+                            e1_found = arg
+                        elif cur_label == ep_2.label or ep_2.label == qeq_label:
+                            e2_found = arg
+                    else:
+                        if cur_label == ep_1.label or ep_1.iv == cur_label:
+                            e1_found = arg
+                        elif cur_label == ep_2.label or ep_2.iv == cur_label:
+                            e2_found = arg
 
                 if e1_found and e2_found:
-                    feat = e1_tag + "#" + ep.pred.string + "#" + e2_tag
+                    if e1_found < e2_found:
+                        feat = e1_tag + "#" + ep.pred.string + "#" + e2_tag
+                    else:
+                        feat = e2_tag + "#" + ep.pred.string + "#" + e1_tag
+                    feat = "PRED=" + feat
                     features.append(feat)
 
     return features
@@ -187,7 +200,7 @@ def run_ace(sentence):
 
 def find_sentence(e1, e1_begin, e1_end, e2, e2_begin, e2_end, sent, cached_sent_file):
     index = None
-    search_key = "#-#".join((e1, string(e1_begin), string(e1_end), e2, string(e2_begin), string(e2_end), sent))
+    search_key = "#-#".join((e1, str(e1_begin), str(e1_end), e2, str(e2_begin), str(e2_end), sent))
     with open(cached_sent_file, 'r') as cached_sents:
         for i, line in enumerate(cached_sents.readlines()):
             if line.strip() == search_key:
@@ -242,7 +255,7 @@ def read_doc(e1, e1_begin, e1_end, e2, e2_begin, e2_end, file_name=None):
 
 
 def write_features_to_file(output_lines):
-    f = open("Data/cachedFeatureDictionary.base.out", "w")
+    f = open("Data/cachedFeatureDictionary.dev.out", "w")
     for line in output_lines:
         f.write(line + "\n")
 
@@ -254,7 +267,7 @@ if __name__ == "__main__":
     options, args = parser.parse_args()
     if len(args) == 0:
         cached_sentences_dir = "Data/cachedSentences.dev.FULL.out"
-        cached_MRSs_dir = "Data/cachedMRSs.eval.out"
+        cached_MRSs_dir = "Data/cachedMRSs.dev.out"
         output_lines = list()
 
         with open(cached_sentences_dir) as f:
