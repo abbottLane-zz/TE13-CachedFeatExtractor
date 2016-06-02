@@ -57,16 +57,33 @@ def extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, ace_result, reversed):
         features.extend(get_properties(mrs, ep_1, ep_2, e1_tag, e2_tag))
         features.extend(find_temp_preds(mrs, ep_1, ep_2, e1_tag, e2_tag))
 
-        paths = find_paths(mrs, ep_1, ep_2, e1_tag, e2_tag, "")
+        # Direct argument finding (currently obsolete)
+        args_1 = mrs.args(ep_1.nodeid)
+        args_2 = mrs.args(ep_2.nodeid)
+        feat = None
 
-        if paths:
-            shortest_path = paths[0]
-            for path in paths:
-                if len(path.split(",")) < len(shortest_path.split(",")):
-                    shortest_path = path
-        else:
-            shortest_path = "NO_PATH"
-        features.append("PATH=" + shortest_path)
+        for arg in args_1:
+            if ep_2.label == args_1[arg] or args_2['ARG0'] == args_1[arg]:
+                feat = "DIRECT=e1#"+ep_1.pred.pos+"["+arg+"#e2#"+ep_2.pred.pos + "]"
+                #print(feat)
+                features.append(feat)
+        if not feat:
+            for arg in args_2:
+                if ep_1.label == args_2[arg] or args_1['ARG0'] == args_2[arg]:
+                    feat = "DIRECT=e2#"+ep_2.pred.pos+"[#"+arg+"#e1#"+ep_1.pred.pos + "]"
+                    #print(feat)
+                    features.append(feat)
+
+        # paths = find_paths(mrs, ep_1, ep_2, e1_tag, e2_tag, "")
+        #
+        # if paths:
+        #     shortest_path = paths[0]
+        #     for path in paths:
+        #         if len(path.split(",")) < len(shortest_path.split(",")):
+        #             shortest_path = path
+        # else:
+        #     shortest_path = "NO_PATH"
+        # features.append("PATH=" + shortest_path)
 
     # print("a6")
     return features
@@ -255,7 +272,7 @@ def read_doc(e1, e1_begin, e1_end, e2, e2_begin, e2_end, file_name=None):
 
 
 def write_features_to_file(output_lines):
-    f = open("Data/cachedFeatureDictionary.dev.out", "w")
+    f = open("Data/cachedFeatureDictionary.test.out", "w")
     for line in output_lines:
         f.write(line + "\n")
 
