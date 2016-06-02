@@ -58,16 +58,16 @@ def extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, ace_result, reversed):
         features.extend(find_temp_preds(mrs, ep_1, ep_2, e1_tag, e2_tag))
         features.extend(find_direct_paths(mrs, ep_1, ep_2, e1_tag, e2_tag))
 
-        paths = find_paths(mrs, ep_1, ep_2, e1_tag, e2_tag, "")
-
-        if paths:
-            shortest_path = paths[0]
-            for path in paths:
-                if len(path.split(",")) < len(shortest_path.split(",")):
-                    shortest_path = path
-        else:
-            shortest_path = "NO_PATH"
-        features.append("PATH=" + shortest_path)
+        # paths = find_paths(mrs, ep_1, ep_2, e1_tag, e2_tag, "")
+        #
+        # if paths:
+        #     shortest_path = paths[0]
+        #     for path in paths:
+        #         if len(path.split(",")) < len(shortest_path.split(",")):
+        #             shortest_path = path
+        # else:
+        #     shortest_path = "NO_PATH"
+        # features.append("PATH=" + shortest_path)
 
     # print("a6")
     return features
@@ -278,7 +278,7 @@ def read_doc(e1, e1_begin, e1_end, e2, e2_begin, e2_end, file_name=None):
 
 
 def write_features_to_file(output_lines):
-    f = open("Data/cachedFeatureDictionary.just-properties.out", "w")
+    f = open("Data/cachedFeatureDictionary.pred-fixeddirect.out", "w")
     for line in output_lines:
         f.write(line + "\n")
 
