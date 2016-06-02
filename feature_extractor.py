@@ -55,11 +55,11 @@ def extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, ace_result, reversed):
             feat = e2_tag + prop + "=" + mrs.properties(ep_2.iv)[prop]
             features.append(feat)
 
-        # Direct argument finding (currently obsolete)
+        # #Direct argument finding (currently obsolete)
         # args_1 = mrs.args(ep_1.nodeid)
         # args_2 = mrs.args(ep_2.nodeid)
         # feat = None
-        # print("a4")
+        # #print("a4")
         # for arg in args_1:
         #     if ep_2.label == args_1[arg] or args_2['ARG0'] == args_1[arg]:
         #         feat = "e1#"+ep_1.pred.pos+"["+arg+"#e2#"+ep_2.pred.pos + "]"
@@ -71,7 +71,7 @@ def extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, ace_result, reversed):
         #             feat = "e2#"+ep_2.pred.pos+"[#"+arg+"#e1#"+ep_1.pred.pos + "]"
         #             #print(feat)
         #             features.append(feat)
-        # print("a5")
+        # #print("a5")
 
         paths = find_paths(mrs, ep_1, ep_2, e1_tag, e2_tag, "")
 
