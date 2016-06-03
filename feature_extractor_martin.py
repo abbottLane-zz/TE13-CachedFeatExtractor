@@ -11,6 +11,7 @@ __author__ = 'Martin J. Horn'
 
 seen_ids = set()
 
+
 def output_features(features):
     str = ""
     for feat in features:
@@ -57,7 +58,9 @@ def extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, ace_result, reversed):
         # print("a3")
         features.extend(get_lemmas(ep_1, ep_2, e1_tag, e2_tag))
         features.extend(get_properties(mrs, ep_1, ep_2, e1_tag, e2_tag))
-        features.extend(find_temp_preds(mrs, ep_1, ep_2, e1_tag, e2_tag))
+        # features.extend(find_direct_temp_preds(mrs, ep_1, ep_2, e1_tag, e2_tag))
+        # features.extend(find_direct_preds(mrs, ep_1, ep_2, e1_tag, e2_tag))
+        features.extend(find_long_preds(mrs, ep_1, ep_2, e1_tag, e2_tag))
         features.extend(find_direct_paths(mrs, ep_1, ep_2, e1_tag, e2_tag))
 
         global seen_ids
@@ -77,6 +80,16 @@ def extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, ace_result, reversed):
     return features
 
 
+def resolve_qeqs_given_arg_dict(mrs, args):
+    for karg, varg in args.items():
+        if varg[0] == 'h':
+            for hcon in mrs.hcons():
+                if hcon[0] == varg:
+                    args[karg] = hcon[2]
+                    break
+    return args
+
+
 def find_direct_paths(mrs, ep_1, ep_2, e1_tag, e2_tag):
     features = []
     # Direct argument finding (currently obsolete)
@@ -84,48 +97,118 @@ def find_direct_paths(mrs, ep_1, ep_2, e1_tag, e2_tag):
     args_2 = mrs.args(ep_2.nodeid)
     feat = None
 
+    args_1 = resolve_qeqs_given_arg_dict(mrs, args_1)
+    args_2 = resolve_qeqs_given_arg_dict(mrs, args_2)
+
     for arg in args_1:
-        cur_label = args_1[arg]
-        if cur_label[0] == 'h':
-            if cur_label in mrs._hcons:
-                qeq_label = mrs._hcons[cur_label][2]
-            else:
-                qeq_label = None
-        else:
-            qeq_label = None
+        # cur_label = args_1[arg]
+        # if cur_label[0] == 'h':
+        #     if cur_label in mrs._hcons:
+        #         qeq_label = mrs._hcons[cur_label][2]
+        #     else:
+        #         qeq_label = None
+        # else:
+        #     qeq_label = None
         if ep_2.label == args_1[arg] or args_2['ARG0'] == args_1[arg]:
             feat = "DIRECT=" + e1_tag + "#" + ep_1.pred.pos + "[" + arg + "#" + e2_tag + "#" + ep_2.pred.pos + "]"
             # print(feat)
             features.append(feat)
-        elif qeq_label:
-            if ep_2.label == qeq_label:
-                feat = "DIRECT=" + e1_tag + "#" + ep_1.pred.pos + "[" + arg + "#" + e2_tag + "#" + ep_2.pred.pos + "]"
-                # print(feat)
-                features.append(feat)
+        # elif qeq_label:
+        #     if ep_2.label == qeq_label:
+        #         feat = "DIRECT=" + e1_tag + "#" + ep_1.pred.pos + "[" + arg + "#" + e2_tag + "#" + ep_2.pred.pos + "]"
+        #         # print(feat)
+        #         features.append(feat)
     if not feat:
         for arg in args_2:
-            cur_label = args_2[arg]
-            if cur_label[0] == 'h':
-                if cur_label in mrs._hcons:
-                    qeq_label = mrs._hcons[cur_label][2]
-                else:
-                    qeq_label = None
-            else:
-                qeq_label = None
+            # cur_label = args_2[arg]
+            # if cur_label[0] == 'h':
+            #     if cur_label in mrs._hcons:
+            #         qeq_label = mrs._hcons[cur_label][2]
+            #     else:
+            #         qeq_label = None
+            # else:
+            #     qeq_label = None
             if ep_1.label == args_2[arg] or args_1['ARG0'] == args_2[arg]:
                 feat = "DIRECT=" + e2_tag + "#" + ep_2.pred.pos + "[#" + arg + "#" + e1_tag + "#" + ep_1.pred.pos + "]"
                 # print(feat)
                 features.append(feat)
-            elif qeq_label:
-                if ep_2.label == qeq_label:
-                    feat = "DIRECT=" + e1_tag + "#" + ep_1.pred.pos + "[" + arg + "#" + e2_tag + "#" + ep_2.pred.pos + "]"
-                    # print(feat)
-                    features.append(feat)
+            # elif qeq_label:
+            #     if ep_2.label == qeq_label:
+            #         feat = "DIRECT=" + e1_tag + "#" + ep_1.pred.pos + "[" + arg + "#" + e2_tag + "#" + ep_2.pred.pos + "]"
+            #         # print(feat)
+            #         features.append(feat)
 
     return features
 
 
-def find_temp_preds(mrs, ep_1, ep_2, e1_tag, e2_tag):
+def recurse_thru_args(mrs, event_ep, cur_ep):
+    event_found = False
+    pred_args = mrs.args(cur_ep.nodeid)
+    pred_args = resolve_qeqs_given_arg_dict(mrs, pred_args)
+    for arg in pred_args:
+        if "ARG" in arg and arg != "ARG0":
+            cur_label = pred_args[arg]
+            if cur_label == event_ep.label or cur_label == event_ep.iv:
+                event_found = arg
+            else:
+                for ep in mrs.eps():
+                    if ep.iv == cur_label or ep.label == cur_label:
+                        cur_ep = ep
+                if cur_ep:
+                    event_found = recurse_thru_args(mrs, event_ep, cur_ep)
+    return event_found
+
+
+def find_long_preds(mrs, ep_1, ep_2, e1_tag, e2_tag):
+    features = []
+
+    for ep in mrs.eps():
+        e1_found = False
+        e2_found = False
+        pred_args = mrs.args(ep.nodeid)
+        pred_args = resolve_qeqs_given_arg_dict(mrs, pred_args)
+        e1_found = recurse_thru_args(mrs, ep_1, ep)
+        e2_found = recurse_thru_args(mrs, ep_2, ep)
+
+        if e1_found and e2_found:
+            if e1_found < e2_found:
+                feat = e1_tag + "#" + ep.pred.string + "#" + e2_tag
+            else:
+                feat = e2_tag + "#" + ep.pred.string + "#" + e1_tag
+            feat = "LONGPRED=" + feat
+            features.append(feat)
+
+    return features
+
+
+def find_direct_preds(mrs, ep_1, ep_2, e1_tag, e2_tag):
+    features = []
+
+    for ep in mrs.eps():
+        e1_found = False
+        e2_found = False
+        pred_args = mrs.args(ep.nodeid)
+        pred_args = resolve_qeqs_given_arg_dict(mrs, pred_args)
+        for arg in pred_args:
+            if "ARG" in arg and arg != "ARG0":
+                cur_label = pred_args[arg]
+                if cur_label == ep_1.label or ep_1.iv == cur_label:
+                    e1_found = arg
+                elif cur_label == ep_2.label or ep_2.iv == cur_label:
+                    e2_found = arg
+
+        if e1_found and e2_found:
+            if e1_found < e2_found:
+                feat = e1_tag + "#" + ep.pred.string + "#" + e2_tag
+            else:
+                feat = e2_tag + "#" + ep.pred.string + "#" + e1_tag
+            feat = "DIRECTPRED=" + feat
+            features.append(feat)
+
+    return features
+
+
+def find_direct_temp_preds(mrs, ep_1, ep_2, e1_tag, e2_tag):
     features = []
     modal = "_modal"
     temp_preds = ["_after", "_before", "_during", "_while",
@@ -138,29 +221,30 @@ def find_temp_preds(mrs, ep_1, ep_2, e1_tag, e2_tag):
         for pred in temp_preds:
             if pred in ep.pred.string or modal in ep.pred.string:
                 pred_args = mrs.outgoing_args(ep.nodeid)
+                pred_args = resolve_qeqs_given_arg_dict(mrs, pred_args)
                 for arg in pred_args:
                     cur_label = pred_args[arg]
-                    if cur_label[0] == 'h':
-                        qeq_label = mrs._hcons[cur_label][2]
-                    else:
-                        qeq_label = None
-                    if qeq_label:
-                        if cur_label == ep_1.label or ep_1.label == qeq_label:
-                            e1_found = arg
-                        elif cur_label == ep_2.label or ep_2.label == qeq_label:
-                            e2_found = arg
-                    else:
-                        if cur_label == ep_1.label or ep_1.iv == cur_label:
-                            e1_found = arg
-                        elif cur_label == ep_2.label or ep_2.iv == cur_label:
-                            e2_found = arg
+                    # if cur_label[0] == 'h':
+                    #     qeq_label = mrs._hcons[cur_label][2]
+                    # else:
+                    #     qeq_label = None
+                    # if qeq_label:
+                    #     if cur_label == ep_1.label or ep_1.label == qeq_label:
+                    #         e1_found = arg
+                    #     elif cur_label == ep_2.label or ep_2.label == qeq_label:
+                    #         e2_found = arg
+                    # else:
+                    if cur_label == ep_1.label or ep_1.iv == cur_label:
+                        e1_found = arg
+                    elif cur_label == ep_2.label or ep_2.iv == cur_label:
+                        e2_found = arg
 
                 if e1_found and e2_found:
                     if e1_found < e2_found:
                         feat = e1_tag + "#" + ep.pred.string + "#" + e2_tag
                     else:
                         feat = e2_tag + "#" + ep.pred.string + "#" + e1_tag
-                    feat = "PRED=" + feat
+                    feat = "TEMPRED=" + feat
                     features.append(feat)
 
     return features
@@ -305,7 +389,7 @@ def read_doc(e1, e1_begin, e1_end, e2, e2_begin, e2_end, file_name=None):
 
 
 def write_features_to_file(output_lines):
-    f = open("Data/cachedFeatureDictionary.clear-seenids.out", "w")
+    f = open("Data/cachedFeatureDictionary.all-long-preds.out", "w")
     for line in output_lines:
         f.write(line + "\n")
 
