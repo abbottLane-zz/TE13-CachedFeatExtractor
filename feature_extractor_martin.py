@@ -141,7 +141,7 @@ def find_direct_paths(mrs, ep_1, ep_2, e1_tag, e2_tag):
     return features
 
 
-def recurse_thru_args(mrs, event_ep, cur_ep):
+def recurse_thru_args(mrs, event_ep, cur_ep, count=0):
     event_found = False
     pred_args = mrs.args(cur_ep.nodeid)
     pred_args = resolve_qeqs_given_arg_dict(mrs, pred_args)
@@ -154,8 +154,9 @@ def recurse_thru_args(mrs, event_ep, cur_ep):
                 for ep in mrs.eps():
                     if ep.iv == cur_label or ep.label == cur_label:
                         cur_ep = ep
-                if cur_ep:
-                    event_found = recurse_thru_args(mrs, event_ep, cur_ep)
+                if cur_ep and count < 10:
+                    count += 1
+                    event_found = recurse_thru_args(mrs, event_ep, cur_ep, count)
     return event_found
 
 
