@@ -390,7 +390,7 @@ def read_doc(e1, e1_begin, e1_end, e2, e2_begin, e2_end, file_name=None):
 
 
 def write_features_to_file(output_lines):
-    f = open("Data/cachedFeatureDictionary.all-long-preds.out", "w")
+    f = open("Data/cachedFeatureDictionary.all-long-preds2.out", "w")
     for line in output_lines:
         f.write(line + "\n")
 
