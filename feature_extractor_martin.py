@@ -60,7 +60,7 @@ def extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, ace_result, reversed):
         features.extend(get_properties(mrs, ep_1, ep_2, e1_tag, e2_tag))
         # features.extend(find_direct_temp_preds(mrs, ep_1, ep_2, e1_tag, e2_tag))
         # features.extend(find_direct_preds(mrs, ep_1, ep_2, e1_tag, e2_tag))
-        features.extend(find_long_preds(mrs, ep_1, ep_2, e1_tag, e2_tag))
+        # features.extend(find_long_preds(mrs, ep_1, ep_2, e1_tag, e2_tag))
         features.extend(find_direct_paths(mrs, ep_1, ep_2, e1_tag, e2_tag))
 
         global seen_ids
@@ -262,13 +262,24 @@ def get_lemmas(ep_1, ep_2, e1_tag, e2_tag):
 
 
 def get_properties(mrs, ep_1, ep_2, e1_tag, e2_tag):
+    TAM = {"TENSE", "MOOD", "PERF", "PROG"}
     features = []
-    for prop in mrs.properties(ep_1.iv):
-        feat = e1_tag + prop + "=" + mrs.properties(ep_1.iv)[prop]
-        features.append(feat)
-    for prop in mrs.properties(ep_2.iv):
-        feat = e2_tag + prop + "=" + mrs.properties(ep_2.iv)[prop]
-        features.append(feat)
+    # for prop in mrs.properties(ep_1.iv):
+    #     feat = e1_tag + prop + "=" + mrs.properties(ep_1.iv)[prop]
+    #     features.append(feat)
+    # for prop in mrs.properties(ep_2.iv):
+    #     feat = e2_tag + prop + "=" + mrs.properties(ep_2.iv)[prop]
+    #     features.append(feat)
+    if ep_1.pred.pos == 'v':
+        for prop in mrs.properties(ep_1.iv):
+            if prop in TAM:
+                feat = e1_tag + prop + "=" + mrs.properties(ep_1.iv)[prop]
+                features.append(feat)
+    if ep_2.pred.pos == 'v':
+        for prop in mrs.properties(ep_2.iv):
+            if prop in TAM:
+                feat = e2_tag + prop + "=" + mrs.properties(ep_2.iv)[prop]
+                features.append(feat)
 
     return features
 
@@ -296,23 +307,31 @@ def find_paths(mrs, ep_1, ep_2, e1_tag, e2_tag, cur_path, count=0):
         global seen_ids
         if node_id not in seen_ids and count < 10:
             if mrs.ep(node_id).label != ep_1.label and mrs.ep(node_id).iv != ep_1.iv:
+                prefix = None
                 for arg in in_args[node_id]:
-                    prefix = arg + "#"
-                    break
-                seen_ids.add(node_id)
-                count += 1
-                paths += find_paths(mrs, ep_1, mrs.ep(node_id), e1_tag, e2_tag, prefix + cur_path, count)
+                    # New ARG restriction
+                    if "ARG" in arg:
+                        prefix = arg + "#"
+                        break
+                if prefix:
+                    seen_ids.add(node_id)
+                    count += 1
+                    paths += find_paths(mrs, ep_1, mrs.ep(node_id), e1_tag, e2_tag, prefix + cur_path, count)
             else:
+                prefix = None
                 for arg in in_args[node_id]:
-                    prefix = arg + "#"
-                    break
-                if mrs.ep(node_id).pred.pos:
-                    cur_path = e1_tag + "#" + mrs.ep(node_id).pred.pos + "," + prefix + cur_path
-                else:
-                    cur_path = e1_tag + "#" + "NO_POS," + prefix + cur_path
+                    # New ARG restriction
+                    if "ARG" in arg:
+                        prefix = arg + "#"
+                        break
+                if prefix:
+                    if mrs.ep(node_id).pred.pos:
+                        cur_path = e1_tag + "#" + mrs.ep(node_id).pred.pos + "," + prefix + cur_path
+                    else:
+                        cur_path = e1_tag + "#" + "NO_POS," + prefix + cur_path
                 # Debug line: pred name
                 # cur_path = mrs.ep(node_id).pred.string.strip("\"") + "," + prefix + cur_path
-                paths.append(cur_path)
+                    paths.append(cur_path)
         # else:
         #     paths.clear()
 
@@ -390,7 +409,7 @@ def read_doc(e1, e1_begin, e1_end, e2, e2_begin, e2_end, file_name=None):
 
 
 def write_features_to_file(output_lines):
-    f = open("Data/cachedFeatureDictionary.all-long-preds2.out", "w")
+    f = open("Data/cacheFeatDict.lem-limprops-clear-restr-paths-dirqeq.dev.out", "w")
     for line in output_lines:
         f.write(line + "\n")
 
