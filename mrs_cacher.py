@@ -162,8 +162,11 @@ def chop_sentence(sentence, e1_e, e2_e):
 
     return new_sentence
 
+COUNT = 0
+
 
 def run_ace(sentence):
+    global COUNT
     ace_bin = "/Applications/ace/ace-0.9.22/ace"
     erg_file = "/Applications/ace/ace-0.9.22/erg-1214-osx-0.9.22.dat"
     # ace_bin = "/home/wlane/Applications/ace-0.9.23/ace"
@@ -173,6 +176,9 @@ def run_ace(sentence):
 
     # ace_bin = "/Applications/ace/ace-0.9.22/ace"
     # erg_file = "/Applications/ace/ace-0.9.22/erg-1214-osx-0.9.22.dat"
+
+    print("Running Ace " + str(COUNT))
+    COUNT += 1
     results = ace.parse(erg_file, sentence, cmdargs=['-n', '1'], executable=ace_bin)['RESULTS']
     if results:
         res1 = results[0]['MRS']
@@ -221,7 +227,7 @@ if __name__ == "__main__":
     parser = OptionParser(__doc__)
     options, args = parser.parse_args()
 
-    cached_file_path = "Data/cachedSentences.dev.FULL.out"
+    cached_file_path = "Data/cachedSentences.eval.FULL.out"
     # cached_file_path = "/home2/wlane/mrs-575/TE13-CachedFeatExtractor/Data/cachedSentences.out"
 
     with open(cached_file_path) as file:
@@ -230,7 +236,10 @@ if __name__ == "__main__":
     # To collect the lines of final output
     # list_of_output_lines = list()
 
-    f = open("Data/cachedMRSs-sent_reduction.dev.out", "w")
+    f = open("Data/cachedMRSs-sent_reduction.eval.out", "w")
+
+    prev_sent = None
+    prev_res = None
 
     # per line, send each sentence to the erg
     for sentence in sentences:
@@ -243,20 +252,27 @@ if __name__ == "__main__":
         e2_e = tokens[5]
         sent = tokens[6].rstrip("\n")
 
-        # In the output file of this program, feature sets will be structured as: key=+=feat1#-#feat2#-#feat3#-#etc...
-        key = e1+e1_b+e1_e+e2+e2_b+e2_e+sent
+        if sent == prev_sent and prev_res:
+            res = prev_res
+        else:
+            # In the output file of this program, feature sets will be structured as: key=+=feat1#-#feat2#-#feat3#-#etc...
+            key = e1+e1_b+e1_e+e2+e2_b+e2_e+sent
 
-        e1, e1_b, e1_e, e2, e2_b, e2_e, sent, reversed = read_doc(e1, e1_b, e1_e, e2, e2_b, e2_e, sent)
+            e1, e1_b, e1_e, e2, e2_b, e2_e, sent, reversed = read_doc(e1, e1_b, e1_e, e2, e2_b, e2_e, sent)
 
-        res = run_ace(sent)
-        if not res:
-            new_sent = chop_sentence(sent, e1_e, e2_e)
-            if new_sent:
-                res = run_ace(new_sent)
+            res = run_ace(sent)
+            if not res:
+                new_sent = chop_sentence(sent, e1_e, e2_e)
+                if new_sent:
+                    res = run_ace(new_sent)
 
         # list_of_output_lines.append(res)
 
         f.write(str(res) + "\n")
+
+        prev_sent = sent
+        prev_res = res
+
         # print(res)
         # if res:
         #     feats = extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, res,reversed)
