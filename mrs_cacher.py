@@ -9,13 +9,14 @@ from delphin.mrs import simplemrs
 __author__ = 'Martin J. Horn'
 
 
-def format_features(features,key):
+def format_features(features, key):
     str = key+"=+="
     for feat in features:
         str += feat + "#-#"
     str = str[:-3]
 
     return str
+
 
 def extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, ace_result, reversed):
     # print("a1"+ace_result)
@@ -146,11 +147,29 @@ def find_paths(mrs, ep_1, ep_2, e1_tag, e2_tag, cur_path, count=0):
     return paths
 
 
+def chop_sentence(sentence, e1_e, e2_e):
+    new_sentence = None
+    for i, char in enumerate(sentence):
+        if char == ',' and i > e1_e and i > e2_e:
+            if i > 0:
+                if sentence[i-1] == ' ':
+                    new_sentence = sentence[:i-1]
+                else:
+                    new_sentence = sentence[:i]
+                new_sentence += '.'
+
+                return new_sentence
+
+    return new_sentence
+
+
 def run_ace(sentence):
-    ace_bin = "/home/wlane/Applications/ace-0.9.23/ace"
-    erg_file = "/home/wlane/Applications/ace-0.9.23/erg-1214-x86-64-0.9.23.dat"
-#    ace_bin = "/home2/wlane/mrs-575/ace/ace"
-#    erg_file = "/home2/wlane/mrs-575/ace/erg-1214-x86-64-0.9.22.dat"
+    ace_bin = "/Applications/ace/ace-0.9.22/ace"
+    erg_file = "/Applications/ace/ace-0.9.22/erg-1214-osx-0.9.22.dat"
+    # ace_bin = "/home/wlane/Applications/ace-0.9.23/ace"
+    # erg_file = "/home/wlane/Applications/ace-0.9.23/erg-1214-x86-64-0.9.23.dat"
+    # ace_bin = "/home2/wlane/mrs-575/ace/ace"
+    # erg_file = "/home2/wlane/mrs-575/ace/erg-1214-x86-64-0.9.22.dat"
 
     # ace_bin = "/Applications/ace/ace-0.9.22/ace"
     # erg_file = "/Applications/ace/ace-0.9.22/erg-1214-osx-0.9.22.dat"
@@ -202,8 +221,6 @@ if __name__ == "__main__":
     parser = OptionParser(__doc__)
     options, args = parser.parse_args()
 
-
-
     cached_file_path = "Data/cachedSentences.dev.FULL.out"
     # cached_file_path = "/home2/wlane/mrs-575/TE13-CachedFeatExtractor/Data/cachedSentences.out"
 
@@ -211,7 +228,9 @@ if __name__ == "__main__":
         sentences = file.readlines()
 
     # To collect the lines of final output
-    list_of_output_lines = list()
+    # list_of_output_lines = list()
+
+    f = open("Data/cachedMRSs-sent_reduction.dev.out", "w")
 
     # per line, send each sentence to the erg
     for sentence in sentences:
@@ -230,8 +249,15 @@ if __name__ == "__main__":
         e1, e1_b, e1_e, e2, e2_b, e2_e, sent, reversed = read_doc(e1, e1_b, e1_e, e2, e2_b, e2_e, sent)
 
         res = run_ace(sent)
-        list_of_output_lines.append(res)
-        print(res)
+        if not res:
+            new_sent = chop_sentence(sent, e1_e, e2_e)
+            if new_sent:
+                res = run_ace(new_sent)
+
+        # list_of_output_lines.append(res)
+
+        f.write(str(res) + "\n")
+        # print(res)
         # if res:
         #     feats = extract_features(e1, e1_b, e1_e, e2, e2_b, e2_e, res,reversed)
         #     formatted_feat = format_features(feats, key)
@@ -243,10 +269,8 @@ if __name__ == "__main__":
         #     #debug
         #     print("NO_PARSE")
 
-
     # Write features to output file
-    f=  open("Data/cachedMRSs.dev.out", "w")
-    for line in list_of_output_lines:
-        f.write(str(line)+"\n")
-    f.close()
+    # for line in list_of_output_lines:
+    #     f.write(str(line)+"\n")
 
+    f.close()
