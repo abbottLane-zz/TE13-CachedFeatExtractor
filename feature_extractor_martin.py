@@ -408,8 +408,16 @@ def read_doc(e1, e1_begin, e1_end, e2, e2_begin, e2_end, file_name=None):
     return e1_string, e1_begin_sent, e1_end_sent, e2_string, e2_begin_sent, e2_end_sent, sent, reversed
 
 
+# l: lemmas
+# r: properties
+# n: noun properties
+# d: direct paths
+# p: paths
+# i: increased parse rate
+
+
 def write_features_to_file(output_lines):
-    f = open("Data/cacheFeatDict.lem-limprops-clear-restr-paths-dirqeq.dev.out", "w")
+    f = open("Data/cacheFeatDict.lrdp.dev.out", "w")
     for line in output_lines:
         f.write(line + "\n")
 
